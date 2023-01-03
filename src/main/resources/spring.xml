@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--扫描组件（排除控制层）-->
+    <context:component-scan base-package="com.atguigu.ssm">
+        <!--用注解的reference排除待扫描目标-->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--引入jdbc.properties-->
+    <context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
+
+    <!--配置数据源-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" >
+        <property name="driverClassName" value="${jdbc.driver}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+    </bean>
+
+    <!--配置事务管理器-->
+    <!-- 注册 事务管理器 ： 是个切面类 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!-- 注入数据源：链接均从数据源当中获取 -->
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!-- 开启事务的注解驱动 ： 将环绕通知作用到连接点上，即 @Transactional 标记的类 或 方法使用事务管理,选择tx包下 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+
+    <!--配置SqlSessionFactoryBean，可以直接在spring的IOC中获取SqlSessionFactory-->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--可以看到spring可以替代Mybatis核心配置做一些配置，可以自由选择-->
+        <!--设置Mybatis核心配置文件的路径-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+        <!--设置数据源-->
+        <property name="dataSource" ref="dataSource"></property>
+        <!--设置包对应别名 ，方resultType直接使用小写类名，如user-->
+        <property name="typeAliasesPackage" value="com.atguigu.ssm.pojo"></property>
+        <!--设置映射文件的路径，
+        只有映射文件和mapper接口不在相同的目录下，才需要指定，否则可以省略-->
+        <!--<property name="mapperLocations" value="classpath:${resources根目录下下文件名}/*.xml"-->
+        <!--配置分页插件-->
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor"></bean>
+            </array>
+        </property>
+    </bean>
+
+    <!--配置Mapper接口的扫描：将指定包下所有的mapper接口，
+    通过sqlSession创建其代理实现类，并将这些代理实现类，交由ioc管理-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+           <property name="basePackage" value="com.atguigu.ssm.mapper"></property>
+    </bean>
+
+
+</beans>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace ：对应的mapper接口 -->
+<!-- <mapper namespace="com.atguigu.mybatis.mapper.UserMapper">-->
+<mapper namespace="com.atguigu.ssm.mapper.EmployeeMapper">
+    <!-- 相同的属性和名称不用写也行的 -->
+    <resultMap id="empResultMap" type="Employee">
+        <!-- id 处理主键和属性字段的映射关系 -->
+        <id column="emp_id" property="id"></id>
+
+        <!-- result 处理普通字段和属性的映射关系 -->
+        <result column="emp_name" property="name"></result>
+
+    </resultMap>
+    <!--List<Employee> getAllEmployee();-->
+    <select id="getAllEmployee" resultMap="empResultMap">
+        select * from t_emp
+    </select>
+</mapper>
